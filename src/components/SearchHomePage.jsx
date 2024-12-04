@@ -1,34 +1,129 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 import { FaTrain, FaMapMarkerAlt, FaCalendarAlt } from "react-icons/fa";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
 function SearchHomePage() {
-  // Đặt giá trị mặc định là ngày hôm nay
-  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [locations, setLocations] = useState([]); // Danh sách tỉnh/thành phố
+  const [filteredLocationsFrom, setFilteredLocationsFrom] = useState([]); // Gợi ý từ đâu
+  const [filteredLocationsTo, setFilteredLocationsTo] = useState([]); // Gợi ý đến đâu
+  const [fromLocation, setFromLocation] = useState(""); // Giá trị từ đâu
+  const [toLocation, setToLocation] = useState(""); // Giá trị đến đâu
+  const [selectedDate, setSelectedDate] = useState(new Date()); // Ngày
+
+  // Lấy danh sách tỉnh/thành phố từ API
+  useEffect(() => {
+    const fetchLocations = async () => {
+      try {
+        const response = await axios.get("https://provinces.open-api.vn/api/");
+        setLocations(response.data);
+      } catch (error) {
+        console.error("Error fetching locations:", error);
+      }
+    };
+
+    fetchLocations();
+  }, []);
+
+  // Hàm xử lý gợi ý khi nhập địa điểm
+  const handleInputChange = (input, setLocation, setFilteredLocations) => {
+    setLocation(input);
+    if (input.length > 0) {
+      const filtered = locations.filter((location) =>
+        location.name.toLowerCase().includes(input.toLowerCase())
+      );
+      setFilteredLocations(filtered);
+    } else {
+      setFilteredLocations([]);
+    }
+  };
+
+  // Hàm xử lý khi chọn tỉnh từ danh sách gợi ý
+  const handleSelectLocation = (name, setLocation, setFilteredLocations) => {
+    setLocation(name); // Gán tên tỉnh được chọn vào input
+    setFilteredLocations([]); // Ẩn danh sách gợi ý
+  };
 
   return (
     <div>
       {/* Search Section */}
       <div className="flex flex-col gap-5 mt-10">
-        {/* Ô tìm kiếm địa điểm */}
-        <div className="flex justify-between gap-10">
-          <div className="flex items-center w-full border-b-2 py-3 px-4">
+        <div className="flex justify-between gap-3">
+          {/* Ô tìm kiếm địa điểm từ đâu */}
+          <div className="relative flex items-center w-full border-b-2 py-3 px-4">
             <FaMapMarkerAlt className="mr-3 text-blue-500 text-xl" />
             <input
-              placeholder="NDLS, New Delhi Railway Station"
+              value={fromLocation}
+              onChange={(e) =>
+                handleInputChange(
+                  e.target.value,
+                  setFromLocation,
+                  setFilteredLocationsFrom
+                )
+              }
+              placeholder="Thành Phố Hà Nội"
               className="w-full outline-none text-base"
               type="text"
             />
+            {/* Gợi ý danh sách tỉnh */}
+            {filteredLocationsFrom.length > 0 && (
+              <ul className="absolute top-full left-0 bg-white border border-gray-300 rounded-md shadow-md mt-1 w-full max-h-48 overflow-y-auto z-10">
+                {filteredLocationsFrom.map((location) => (
+                  <li
+                    key={location.code}
+                    onClick={() =>
+                      handleSelectLocation(
+                        location.name,
+                        setFromLocation,
+                        setFilteredLocationsFrom
+                      )
+                    }
+                    className="py-2 px-4 hover:bg-blue-100 cursor-pointer"
+                  >
+                    {location.name}
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
 
-          <div className="flex items-center w-full border-b-2 py-3 px-4">
+          {/* Ô tìm kiếm địa điểm đến đâu */}
+          <div className="relative flex items-center w-full border-b-2 py-3 px-4">
             <FaMapMarkerAlt className="mr-3 text-blue-500 text-xl" />
             <input
-              placeholder="LJN, Lucknow Junction"
+              value={toLocation}
+              onChange={(e) =>
+                handleInputChange(
+                  e.target.value,
+                  setToLocation,
+                  setFilteredLocationsTo
+                )
+              }
+              placeholder="Thành Phố Hồ Chí Minh"
               className="w-full outline-none text-base"
               type="text"
             />
+            {/* Gợi ý danh sách tỉnh */}
+            {filteredLocationsTo.length > 0 && (
+              <ul className="absolute top-full left-0 bg-white border border-gray-300 rounded-md shadow-md mt-1 w-full max-h-48 overflow-y-auto z-10">
+                {filteredLocationsTo.map((location) => (
+                  <li
+                    key={location.code}
+                    onClick={() =>
+                      handleSelectLocation(
+                        location.name,
+                        setToLocation,
+                        setFilteredLocationsTo
+                      )
+                    }
+                    className="py-2 px-4 hover:bg-blue-100 cursor-pointer"
+                  >
+                    {location.name}
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
         </div>
 
@@ -36,9 +131,9 @@ function SearchHomePage() {
         <div className="flex items-center w-1/2 border-b-2 py-3 px-4">
           <FaCalendarAlt className="mr-3 text-blue-500 text-xl" />
           <DatePicker
-            selected={selectedDate} // Giá trị mặc định là ngày hôm nay
-            onChange={(date) => setSelectedDate(date)} // Hàm xử lý khi chọn ngày
-            dateFormat="EEEE, dd MMM yyyy" // Định dạng ngày hiển thị
+            selected={selectedDate}
+            onChange={(date) => setSelectedDate(date)}
+            dateFormat="EEEE, dd MMM yyyy"
             className="w-full outline-none text-base"
           />
         </div>
