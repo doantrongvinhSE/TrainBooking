@@ -1,10 +1,17 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { FaTrain, FaMapMarkerAlt, FaCalendarAlt } from "react-icons/fa";
-import DatePicker from "react-datepicker";
+import { FaTrain } from "react-icons/fa";
+// import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import { DatePicker, Space } from "antd";
+import { AiOutlineSwap } from "react-icons/ai";
+import { FaLocationDot } from "react-icons/fa6";
+
+
+import { Input } from "antd";
 
 function SearchHomePage() {
+  const { RangePicker } = DatePicker;
   const [locations, setLocations] = useState([]); // Danh sách tỉnh/thành phố
   const [filteredLocationsFrom, setFilteredLocationsFrom] = useState([]); // Gợi ý từ đâu
   const [filteredLocationsTo, setFilteredLocationsTo] = useState([]); // Gợi ý đến đâu
@@ -16,7 +23,7 @@ function SearchHomePage() {
   useEffect(() => {
     const fetchLocations = async () => {
       try {
-        const response = await axios.get("https://provinces.open-api.vn/api/");
+        const response = await axios.get("http://localhost:8080/api/provinces");
         setLocations(response.data);
       } catch (error) {
         console.error("Error fetching locations:", error);
@@ -49,11 +56,10 @@ function SearchHomePage() {
     <div>
       {/* Search Section */}
       <div className="flex flex-col gap-5 mt-10">
-        <div className="flex justify-between gap-3">
+        <div className="flex justify-between gap-5">
           {/* Ô tìm kiếm địa điểm từ đâu */}
-          <div className="relative flex items-center w-full border-b-2 py-3 px-4">
-            <FaMapMarkerAlt className="mr-3 text-blue-500 text-xl" />
-            <input
+          <div className="relative flex-col w-full">
+            <Input
               value={fromLocation}
               onChange={(e) =>
                 handleInputChange(
@@ -63,7 +69,12 @@ function SearchHomePage() {
                 )
               }
               placeholder="Thành Phố Hà Nội"
-              className="w-full outline-none text-base"
+              prefix={
+                <FaLocationDot
+                  className="text-lg text-red-500"
+                />
+              }
+              className="w-full outline-none text-base py-3"
               type="text"
             />
             {/* Gợi ý danh sách tỉnh */}
@@ -88,10 +99,13 @@ function SearchHomePage() {
             )}
           </div>
 
+          <div className="flex items-center text-2xl text-blue-500">
+            <AiOutlineSwap />
+          </div>
+
           {/* Ô tìm kiếm địa điểm đến đâu */}
-          <div className="relative flex items-center w-full border-b-2 py-3 px-4">
-            <FaMapMarkerAlt className="mr-3 text-blue-500 text-xl" />
-            <input
+          <div className="relative items-center w-full">
+            <Input
               value={toLocation}
               onChange={(e) =>
                 handleInputChange(
@@ -101,7 +115,12 @@ function SearchHomePage() {
                 )
               }
               placeholder="Thành Phố Hồ Chí Minh"
-              className="w-full outline-none text-base"
+              prefix={
+                <FaLocationDot
+                  className="text-lg text-red-500"
+                />
+              }
+              className="w-full outline-none text-base py-3"
               type="text"
             />
             {/* Gợi ý danh sách tỉnh */}
@@ -128,13 +147,10 @@ function SearchHomePage() {
         </div>
 
         {/* Ô tìm kiếm ngày */}
-        <div className="flex items-center w-1/2 border-b-2 py-3 px-4">
-          <FaCalendarAlt className="mr-3 text-blue-500 text-xl" />
-          <DatePicker
-            selected={selectedDate}
-            onChange={(date) => setSelectedDate(date)}
-            dateFormat="EEEE, dd MMM yyyy"
-            className="w-full outline-none text-base"
+        <div className="flex items-center">
+          <RangePicker
+            className="py-3 text-2xl"
+            renderExtraFooter={() => "extra footer"}
           />
         </div>
 
